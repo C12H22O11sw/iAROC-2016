@@ -14,16 +14,16 @@
 
 
 
-#define leftTrigPin 52
-#define leftEchoPin 53
+#define leftTrigPin 50
+#define leftEchoPin 51
 #define rightTrigPin 22
 #define rightEchoPin 23
-#define frontTrigPin 48
-#define frontEchoPin 49
+#define frontTrigPin 44
+#define frontEchoPin 45
 #define backTrigPin 46
 #define backEchoPin 47
-#define rotationTrigPin 50
-#define rotationEchoPin 51
+#define rotationTrigPin 48
+#define rotationEchoPin 49
 
 #define leftDistanceArray 1
 #define rightDistanceArray 2
@@ -220,8 +220,8 @@ void setMotorSpeeds(int backLeft, int backRight, int frontLeft, int frontRight)
 void setRobotSpeed(int x, int y, int r)
 {
   int frontLeft = x + y * PI / 2 - r;
-  int frontRight = -x + y * PI / 2 + r;
-  int backLeft = -x + y * PI / 2 - r;
+  int frontRight = -x - y * PI / 2 + r;
+  int backLeft = -x - y * PI / 2 - r;
   int backRight = x + y * PI / 2 + r;
   setMotorSpeeds(backLeft, backRight, frontLeft, frontRight);
 }
@@ -252,6 +252,7 @@ void corectRotation() {
 
 
 
+<<<<<<< HEAD
 
 void allign() {
   int x = 0;
@@ -342,6 +343,8 @@ void allign() {
 
 
 
+=======
+>>>>>>> parent of 5699d80... first merge
 
 
 
