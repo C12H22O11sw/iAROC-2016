@@ -14,16 +14,16 @@
 
 
 
-#define leftTrigPin 50
-#define leftEchoPin 51
+#define leftTrigPin 52
+#define leftEchoPin 53
 #define rightTrigPin 22
 #define rightEchoPin 23
-#define frontTrigPin 44
-#define frontEchoPin 45
+#define frontTrigPin 48
+#define frontEchoPin 49
 #define backTrigPin 46
 #define backEchoPin 47
-#define rotationTrigPin 48
-#define rotationEchoPin 49
+#define rotationTrigPin 50
+#define rotationEchoPin 51
 
 #define leftDistanceArray 1
 #define rightDistanceArray 2
