@@ -14,16 +14,16 @@
 
 
 
-#define leftTrigPin 50
-#define leftEchoPin 51
+#define leftTrigPin 52
+#define leftEchoPin 53
 #define rightTrigPin 22
 #define rightEchoPin 23
-#define frontTrigPin 44
-#define frontEchoPin 45
+#define frontTrigPin 48
+#define frontEchoPin 49
 #define backTrigPin 46
 #define backEchoPin 47
-#define rotationTrigPin 48
-#define rotationEchoPin 49
+#define rotationTrigPin 50
+#define rotationEchoPin 51
 
 #define leftDistanceArray 1
 #define rightDistanceArray 2
@@ -219,8 +219,8 @@ void setMotorSpeeds(int backLeft, int backRight, int frontLeft, int frontRight)
 void setRobotSpeed(int x, int y, int r)
 {
   int frontLeft = x + y * PI / 2 - r;
-  int frontRight = -x - y * PI / 2 + r;
-  int backLeft = -x - y * PI / 2 - r;
+  int frontRight = -x + y * PI / 2 + r;
+  int backLeft = -x + y * PI / 2 - r;
   int backRight = x + y * PI / 2 + r;
   setMotorSpeeds(backLeft, backRight, frontLeft, frontRight);
 }
@@ -248,6 +248,95 @@ void corectRotation() {
   Serial.println(rotationOffset);
   setRobotSpeed(0, 0, rotationOffset * 3);
 }
+
+
+
+void allign() {
+  int x = 0;
+  int y = 0;
+  int r = 0;
+  //** X correction **//
+
+  if (isWallOnRight()) {
+    x = 5 - getRightDistanceValue();
+  }
+  else if (isWallOnLeft()) {
+    x = getLeftDistanceValue() - 5 ;
+  }
+  else;
+
+
+  /** Y correction * //
+
+  if (isWallOnFront()) {
+    y = 5 - getFrontDistanceValue();
+  }
+  else if (isWallOnBack()) {
+    y = getBackDistanceValue() - 5 ;
+  }
+  else;*/
+
+  setRobotSpeed(x,y,0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -334,8 +423,13 @@ void loop() {
   }
 
 
-  if (millis() - lastChangeInDirection > 1910) {
+  /*if (millis() - lastChangeInDirection > 1910) {
     lastChangeInDirection = millis();
+    Serial.print(isWallOnFront());
+    Serial.print(isWallOnBack());
+    Serial.print(isWallOnLeft());
+    Serial.print(isWallOnRight());
+    //Serial.println(getFrontDistanceValue());
     switch (robotDirection) {
       case north:
         Serial.println("north");
@@ -358,7 +452,9 @@ void loop() {
         break;
 
     }
-  }
+  }*/
+
+  allign();
 
 
 
