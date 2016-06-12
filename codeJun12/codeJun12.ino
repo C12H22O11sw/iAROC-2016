@@ -56,39 +56,6 @@ int lastChangeInDirection;
 
 //************************PING SENSER METHODS ***************************//
 
-long getDistanceValue(int direction)
-{
-long duration, distance;
-int trigPin, echoPin;
-switch(direction) {
-case east:
-trigPin = frontTrigPin;
-echoPin = frontEchoPin;
-break;
-case west:
-trigPin = backTrigPin;
-echoPin = backEchoPin;
-break;
-case north:
-trigPin = leftTrigPin;
-echoPin = leftEchoPin;
-break;
-case south:
-trigPin = rightTrigPin;
-echoPin = rightEchoPin;
-break;
-}
-digitalWrite(trigPin, LOW);
-delayMicroseconds(2);
-digitalWrite(trigPin, HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPin, LOW);
-duration = pulseIn(echoPin, HIGH);
-distance = duration / 5.59;
-
-return distance;
-}
-
 long getRightDistanceValue()
 {
   long duration, distance;
@@ -251,6 +218,7 @@ void corectRotation() {
 
 
 
+
 void allign() {
   int x = 0;
   int y = 0;
@@ -278,7 +246,6 @@ void allign() {
 
   setRobotSpeed(x,y,0);
 }
-
 
 
 
