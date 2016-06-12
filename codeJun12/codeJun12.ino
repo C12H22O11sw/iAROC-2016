@@ -253,6 +253,7 @@ void corectRotation() {
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 void allign() {
   int x = 0;
@@ -343,6 +344,8 @@ void allign() {
 
 
 
+=======
+>>>>>>> parent of 5699d80... first merge
 =======
 >>>>>>> parent of 5699d80... first merge
 
