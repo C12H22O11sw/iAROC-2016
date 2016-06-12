@@ -220,8 +220,8 @@ void setMotorSpeeds(int backLeft, int backRight, int frontLeft, int frontRight)
 void setRobotSpeed(int x, int y, int r)
 {
   int frontLeft = x + y * PI / 2 - r;
-  int frontRight = -x - y * PI / 2 + r;
-  int backLeft = -x - y * PI / 2 - r;
+  int frontRight = -x + y * PI / 2 + r;
+  int backLeft = -x + y * PI / 2 - r;
   int backRight = x + y * PI / 2 + r;
   setMotorSpeeds(backLeft, backRight, frontLeft, frontRight);
 }
