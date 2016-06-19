@@ -331,7 +331,7 @@ void align() {
 
     //** X correction **//
 
-    if (getFrontDistanceValue() < threshold) {
+    else if (getFrontDistanceValue() < threshold) {
       x = PID(targetDistanceFromWall, getFrontDistanceValue());
     }
     else if (getBackDistanceValue() < threshold) {
@@ -339,10 +339,9 @@ void align() {
     }
 
 
-    if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
+    else if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
       r = PID(getRotationDistanceValue(), getLeftDistanceValue());
     }
-    #include "ahlfirhlv"
     //y = 0;
     //r = 0;
     //x = 0;
@@ -396,32 +395,26 @@ void loop() {
   }
   lastChangeInDirection = millis();
   setRobotSpeed(0, 0, 0);
-  //align();
+  align();
   int robotMovoingSpeed = 40;
   hasBeenHere[robotXposition][robotYposition] = true;
+
+
   switch (robotDirection) {
     case north:
       Serial.println("north");
-      setRobotSpeed(0, 0, 0);
-      align();
       MoveRobotNorthOneBlock();
       break;
     case south:
       Serial.println("south");
-      setRobotSpeed(0, 0, 0);
-      align();
       MoveRobotSouthOneBlock();
       break;
     case east:
       Serial.println("east");
-      setRobotSpeed(0, 0, 0);
-      align();
       MoveRobotEastOneBlock();
       break;
     case west:
       Serial.println("west");
-      setRobotSpeed(0, 0, 0);
-      align();
       MoveRobotWestOneBlock();
       break;
     default :
