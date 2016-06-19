@@ -48,7 +48,11 @@ int lastChangeInDirection = 0;
 
 int robotXposition; //east west front back
 int robotYposition; //north south right left
+int pathLength = 0;
+String path [1];
 boolean hasBeenHere [25][9];
+
+
 /* quick reference
  *
  *  robot moving speed = 100 PWM
@@ -66,6 +70,19 @@ boolean hasBeenHere [25][9];
 //boolean[][] mazeMap = new boolean[25][9]; //[x][y]
 
 //Walls: North, East, South, West
+
+void addToPath(int x, int y)
+{
+  String coordinate = x + " " + y;
+  pathLength++;
+  int coordinateNumber = pathLength;
+  //String pathHolder [path.length + 1];
+}
+
+void shortenPath()
+{
+  
+}
 
 //************************PING SENSOR METHODS ***************************//
 //Unified distance method
@@ -342,7 +359,6 @@ void align() {
     if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
       r = PID(getRotationDistanceValue(), getLeftDistanceValue());
     }
-    #include "ahlfirhlv"
     //y = 0;
     //r = 0;
     //x = 0;
