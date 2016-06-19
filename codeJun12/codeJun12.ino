@@ -59,35 +59,35 @@ int lastChangeInDirection;
 //Unified distance method
 long getDistanceValue(int direction)
 {
-long duration, distance;
-int trigPin, echoPin;
-switch(direction) {
-case east:
-trigPin = frontTrigPin;
-echoPin = frontEchoPin;
-break;
-case west:
-trigPin = backTrigPin;
-echoPin = backEchoPin;
-break;
-case north:
-trigPin = leftTrigPin;
-echoPin = leftEchoPin;
-break;
-case south:
-trigPin = rightTrigPin;
-echoPin = rightEchoPin;
-break;
-}
-digitalWrite(trigPin, LOW);
-delayMicroseconds(2);
-digitalWrite(trigPin, HIGH);
-delayMicroseconds(10);
-digitalWrite(trigPin, LOW);
-duration = pulseIn(echoPin, HIGH);
-distance = duration / 5.59;
+  long duration, distance;
+  int trigPin, echoPin;
+  switch(direction) {
+    case east:
+      trigPin = frontTrigPin;
+      echoPin = frontEchoPin;
+      break;
+    case west:
+      trigPin = backTrigPin;
+      echoPin = backEchoPin;
+      break;
+    case north:
+      trigPin = leftTrigPin;
+      echoPin = leftEchoPin;
+      break;
+    case south:
+      trigPin = rightTrigPin;
+      echoPin = rightEchoPin;
+      break;
+  }
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH);
+  distance = duration / 5.59;
 
-return distance;
+  return distance;
 }
 
 long getRightDistanceValue()
@@ -156,6 +156,11 @@ long getRotationDistanceValue()
 
   return distance;
 }
+
+bool isWallOn(int direction) {
+  return getDistanceValue(direction) < distanceFromWall;
+}
+
 bool isWallOnRight() {
   if (getRightDistanceValue() < distanceFromWall) {
 
@@ -365,72 +370,56 @@ void allign() {
 
 //*********************** LOOP METHOD ***************************//
 
+void turnLeft() {
+  switch(robotDirection) {
+    case north:
+      robotDirection = east;
+      break;
+    case east:
+      robotDirection = south;
+      break;
+    case south:
+      robotDirection = west;
+      break;
+    case west:
+      robotDirection = north;
+      break;
+  }
+}
+
+void turnRight() {
+  switch(robotDirection) {
+    case north:
+      robotDirection = west;
+      break;
+    case east:
+      robotDirection = north;
+      break;
+    case south:
+      robotDirection = east;
+      break;
+    case west:
+      robotDirection = south;
+      break;
+  }
+}
+
 void loop() {
 
-  if (robotDirection == north) {
+  turnLeft();
 
-    if (!isWallOnFront()) {
-      robotDirection = east;
-    }//if the block east is empty
-    else if (!isWallOnRight()) {
-      robotDirection = north;
-    }
-    else if (!isWallOnBack()) {
-      robotDirection = west;
-    }
-    else if (!isWallOnLeft()) {
-      robotDirection = south;
-    }
-  } else if (robotDirection == east) {
-
-    if (!isWallOnLeft()) {
-      robotDirection = south;
-    }
-
-    else if (!isWallOnFront()) {
-      robotDirection = east;
-    }//north
-    else if (!isWallOnRight()) {
-      robotDirection = north;
-    } else if (!isWallOnBack()) {
-      robotDirection = west;
-    }
-  } else if (robotDirection == south) {
-
-    if (!isWallOnBack()) {
-      robotDirection = west;
-    }
-    else if (!isWallOnLeft()) {
-      robotDirection = south;
-    }
-    else if (!isWallOnFront()) {
-      robotDirection = east;
-    }
-    else if (!isWallOnRight()) {
-      robotDirection = north;//north
-    }
-  } else if (robotDirection == west) {
-    if (!isWallOnRight()) {
-      robotDirection = north;
-    }
-    else if (!isWallOnBack) {
-      robotDirection = west;
-    }
-    else if (!isWallOnLeft()) {
-      robotDirection = south;
-    } else if (!isWallOnFront()) {
-      robotDirection = east;
-    }
+  while(isWallOn(robotDirection)) {
+    turnRight();
   }
 
 
   /*if (millis() - lastChangeInDirection > 1910) {
     lastChangeInDirection = millis();
-    Serial.print(isWallOnFront());
-    Serial.print(isWallOnBack());
-    Serial.print(isWallOnLeft());
-    Serial.print(isWallOnRight());
-    //Serial.println(getFrontDistanceValue());
+    Serial.print(isWallOnEast());
+    Serial.print(isWallOnWest());
+    Serial.print(isWallOnSouth());
+    Serial.print(isWallOnNorth());
+    //Serial.println(getEastDistanceValue());
     switch (robotDirection) {
       case north:
         Serial.println("north");
