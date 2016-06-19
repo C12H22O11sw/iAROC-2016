@@ -69,11 +69,11 @@ boolean hasBeenHere [25][9];
 
 //************************PING SENSOR METHODS ***************************//
 //Unified distance method
-long getDistanceValue(int direction)
+long getDistanceValue(int directions)
 {
   long duration, distance;
   int trigPin, echoPin;
-  switch (direction) {
+  switch (directions) {
     case east:
       trigPin = frontTrigPin;
       echoPin = frontEchoPin;
@@ -217,11 +217,25 @@ void setMotorSpeeds(int backLeft, int backRight, int frontLeft, int frontRight)
   setMotorSpeed(frontLeftMotor,  frontLeft);
   setMotorSpeed(frontRightMotor, frontRight);
 }
+int reSize(int n, int limit) {
+  if (n > limit) {
+    return limit;
+  }
+  if (n < -limit) {
+    return -limit;
+  }
+  else {
+    return n;
+  }
+
+}
 void setRobotSpeed(int x, int y, int r)
 {
-  constrain(x, -50, 50);
-  constrain(y, -50, 50);
-  constrain(r, -30, 30);
+  x = reSize(x , 50);
+  y = reSize(y , 50);
+  r = reSize(r , 50);
+
+  Serial.println(r);
   frontLeft = x + y * PI / 2 - r;
   frontRight = -x + y * PI / 2 - r;
   backLeft = -x + y * PI / 2 + r;
@@ -270,7 +284,7 @@ void setup() {
 int PID(int currentValue, int targetValue) {
   return currentValue - targetValue;
 }
-boolean robotIsAlligned() {
+boolean robotIsaligned() {
   int nCorrectValues = 0;
   if (isWallOnRight() && abs(PID(getRightDistanceValue(), 173)) > 50) {
     nCorrectValues--;
@@ -298,28 +312,29 @@ boolean robotIsAlligned() {
 
 
 
-void allign() {
+
+void align() {
   int x = 0;
   int y = 0;
   int r = 0;
   int startTime = millis();
-  int targetDistanceFromWall = 173;
-
-  while (!robotIsAlligned()) {
+  int targetDistanceFromWall = 143;
+  int threshold = 360;
+  while (!robotIsaligned()) {
     //** Y correction **//
-    if (getRightDistanceValue() < 260) {
+    if (getRightDistanceValue() < threshold) {
       y = -PID(targetDistanceFromWall, getRightDistanceValue());
     }
-    else if (getLeftDistanceValue() < 260) {
+    else if (getLeftDistanceValue() < threshold) {
       y =   PID(targetDistanceFromWall, getLeftDistanceValue());
     }
 
     //** X correction **//
 
-    if (getFrontDistanceValue() < 260) {
+    if (getFrontDistanceValue() < threshold) {
       x = PID(targetDistanceFromWall, getFrontDistanceValue());
     }
-    else if (getBackDistanceValue() < 260) {
+    else if (getBackDistanceValue() < threshold) {
       x = -PID(targetDistanceFromWall, getBackDistanceValue());
     }
 
@@ -327,17 +342,19 @@ void allign() {
     if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
       r = PID(getRotationDistanceValue(), getLeftDistanceValue());
     }
+    #include "ahlfirhlv"
     //y = 0;
     //r = 0;
     //x = 0;
-    setRobotSpeed(x/2 ,y/2,-r);
+
+    setRobotSpeed(x , y, -r);
   }
 }
 
 //*********************** LOOP METHOD ***************************//
 
 void turnLeft() {
-  switch(robotDirection) {
+  switch (robotDirection) {
     case north:
       robotDirection = east;
       break;
@@ -354,7 +371,7 @@ void turnLeft() {
 }
 
 void turnRight() {
-  switch(robotDirection) {
+  switch (robotDirection) {
     case north:
       robotDirection = west;
       break;
@@ -372,99 +389,39 @@ void turnRight() {
 
 void loop() {
 
-  robotIsAlligned();
-  testPingSensors();
 
   turnLeft();
-
   while(isWallOn(robotDirection)) {
     turnRight();
   }
-
-  //if (robotDirection == north) {
-    //if (!isWallOnFront()) {
-      //robotDirection = east;
-    //}//if the block east is empty
-    //else if (!isWallOnRight()) {
-      //robotDirection = north;
-    //}
-    //else if (!isWallOnBack()) {
-      //robotDirection = west;
-    //}
-    //else if (!isWallOnLeft()) {
-      //robotDirection = south;
-    //}
-  //} else if (robotDirection == east) {
-
-    //if (!isWallOnLeft()) {
-      //robotDirection = south;
-    //}
-
-    //else if (!isWallOnFront()) {
-      //robotDirection = east;
-    //}//north
-    //else if (!isWallOnRight()) {
-      //robotDirection = north;
-    //} else if (!isWallOnBack()) {
-      //robotDirection = west;
-    //}
-  //} else if (robotDirection == south) {
-
-    //if (!isWallOnBack()) {
-      //robotDirection = west;
-    //}
-    //else if (!isWallOnLeft()) {
-      //robotDirection = south;
-    //}
-    //else if (!isWallOnFront()) {
-      //robotDirection = east;
-    //}
-    //else if (!isWallOnRight()) {
-      //robotDirection = north;//north
-    //}
-  //} else if (robotDirection == west) {
-    //if (!isWallOnRight()) {
-      //robotDirection = north;
-    //}
-    //else if (!isWallOnBack) {
-      //robotDirection = west;
-    //}
-    //else if (!isWallOnLeft()) {
-      //robotDirection = south;
-    //} else if (!isWallOnFront()) {
-      //robotDirection = east;
-    //}
-  //}
-
-  //if (millis() - lastChangeInDirection > 2890) {
   lastChangeInDirection = millis();
   setRobotSpeed(0, 0, 0);
-  //allign();
+  //align();
   int robotMovoingSpeed = 40;
   hasBeenHere[robotXposition][robotYposition] = true;
   switch (robotDirection) {
     case north:
       Serial.println("north");
       setRobotSpeed(0, 0, 0);
-      allign();
+      align();
       MoveRobotNorthOneBlock();
       break;
     case south:
       Serial.println("south");
       setRobotSpeed(0, 0, 0);
-      allign();
+      align();
       MoveRobotSouthOneBlock();
       break;
     case east:
       Serial.println("east");
       setRobotSpeed(0, 0, 0);
-      allign();
+      align();
       MoveRobotEastOneBlock();
       break;
     case west:
       Serial.println("west");
       setRobotSpeed(0, 0, 0);
-      allign();
+      align();
       MoveRobotWestOneBlock();
       break;
     default :
@@ -472,10 +429,6 @@ void loop() {
       break;
 
   }
-  //}
-  //allign();
-  
-
-
+  //align();
 
 }
