@@ -1,54 +1,21 @@
-#define frontRightMotor 2
-#define frontLeftMotor 1
-#define backRightMotor 3
-#define backLeftMotor 4
-
-#define frontRightMotorPinPWM  8
-#define frontRightMotorPinDIR  9
-#define frontLeftMotorPinPWM  6
-#define frontLeftMotorPinDIR  7
-#define backRightMotorPinPWM  10
-#define backRightMotorPinDIR  11
-#define backLeftMotorPinPWM  12
-#define backLeftMotorPinDIR  13
+#include "robot.h"
+#define MOVINGSPEED 50
+#define LEFT_RIGHT_DIFF (1)
+#define FRONT_BACK_DIFF (-2)
 
 
-
-#define leftTrigPin 52
-#define leftEchoPin 53
-#define rightTrigPin 22
-#define rightEchoPin 23
-#define frontTrigPin 48
-#define frontEchoPin 49
-#define backTrigPin 46
-#define backEchoPin 47
-
-#define rotationTrigPin 52
-#define rotationEchoPin 53
-#define rotationTrigPin 50
-#define rotationEchoPin 51
-
-#define leftDistanceArray 1
-#define rightDistanceArray 2
-#define backDistanceArray 3
-#define frontDistanceArray 4
-#define rotationDistanceArray 5
-#define distanceFromWall 350
-
-int frontLeft;
-int frontRight;
-int backLeft;
-int backRight;
 enum directions {
-  north, south, east, west
+  NORTH, SOUTH, EAST, WEST, ROTATION
 };
-int robotDirection = east;
-int robotFutureDirection = east;
-int lastChangeInDirection = 0;
+int robotDirection = EAST;
 
-int robotXposition; //east west front back
-int robotYposition; //north south right left
-boolean hasBeenHere [25][9];
+int robotXposition; //EAST WEST front back
+int robotYposition; //NORTH SOUTH right left
+int pathLength = 0;
+String path [1];
+boolean hasBeenHere [25][17];
+
+
 /* quick reference
  *
  *  robot moving speed = 100 PWM
@@ -67,28 +34,46 @@ boolean hasBeenHere [25][9];
 
 //Walls: North, East, South, West
 
+void addToPath(int x, int y)
+{
+  String coordinate = x + " " + y;
+  pathLength++;
+  int coordinateNumber = pathLength;
+
+  //String pathHolder [path.length + 1];
+}
+
+void shortenPath()
+{
+
+}
+
 //************************PING SENSOR METHODS ***************************//
 //Unified distance method
-long getDistanceValue(int directions)
+long getDistanceValue(int dir)
 {
   long duration, distance;
   int trigPin, echoPin;
-  switch (directions) {
-    case east:
+  switch (dir) {
+    case EAST:
       trigPin = frontTrigPin;
       echoPin = frontEchoPin;
       break;
-    case west:
+    case WEST:
       trigPin = backTrigPin;
       echoPin = backEchoPin;
       break;
-    case north:
+    case NORTH:
       trigPin = rightTrigPin;
       echoPin = rightEchoPin;
       break;
-    case south:
+    case SOUTH:
       trigPin = leftTrigPin;
       echoPin = leftEchoPin;
+      break;
+    case ROTATION:
+      trigPin = rotationTrigPin;
+      echoPin = rotationEchoPin;
       break;
   }
   digitalWrite(trigPin, LOW);
@@ -104,33 +89,24 @@ long getDistanceValue(int directions)
 
 long getRightDistanceValue()
 {
-  return getDistanceValue(north);
+  return getDistanceValue(NORTH);
 }
 long getLeftDistanceValue()
 {
-  return getDistanceValue(south);
+  return getDistanceValue(SOUTH);
 }
 
 long getFrontDistanceValue()
 {
-  return getDistanceValue(east);
+  return getDistanceValue(EAST);
 }
 long getBackDistanceValue()
 {
-  return getDistanceValue(west);
+  return getDistanceValue(WEST);
 }
 long getRotationDistanceValue()
 {
-  long duration, distance;
-  digitalWrite(rotationTrigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(rotationTrigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(rotationTrigPin, LOW);
-  duration = pulseIn(rotationEchoPin, HIGH);
-  distance = duration / 5.59;
-
-  return distance;
+  return getDistanceValue(SOUTH) - getDistanceValue(ROTATION);
 }
 
 bool isWallOn(int direction) {
@@ -193,8 +169,8 @@ void testPingSensors() {
   Serial.print(getFrontDistanceValue());
   Serial.print("  B = ");
   Serial.print(getBackDistanceValue());
-  Serial.print("  RO = ");
-  Serial.println(getRotationDistanceValue());
+  Serial.print("  RO-L = ");
+  Serial.println(getRotationDistanceValue() - getLeftDistanceValue());
 }
 //************************MOTOR METHODS ***************************//
 
@@ -231,36 +207,48 @@ int reSize(int n, int limit) {
 }
 void setRobotSpeed(int x, int y, int r)
 {
-  x = reSize(x , 50);
-  y = reSize(y , 50);
-  r = reSize(r , 50);
-
-  Serial.println(r);
-  frontLeft = x + y * PI / 2 - r;
-  frontRight = -x + y * PI / 2 - r;
-  backLeft = -x + y * PI / 2 + r;
-  backRight = x + y * PI / 2 + r;
+  x = reSize(x , MOVINGSPEED);
+  y = reSize(y , MOVINGSPEED);
+  r = reSize(r , MOVINGSPEED);
+  int left_adjust = 5;
+  int frontLeft = x + y * PI / 2 - r;
+  int frontRight = -x + y * PI / 2 - r;
+  int backLeft = -x + y * PI / 2 + r;
+  int backRight = x + y * PI / 2 + r;
   setMotorSpeeds(backLeft, backRight, frontLeft, frontRight);
 }
-void MoveRobotNorthOneBlock() {
-  setRobotSpeed(0, 50, 0);
-  robotYposition ++;
-  delay(1920);
-}
-void MoveRobotSouthOneBlock() {
-  setRobotSpeed(0, -50, 0);
-  robotYposition --;
-  delay(1920);
-}
-void MoveRobotEastOneBlock() {
-  setRobotSpeed(-50, 0, 0);
-  robotXposition --;
-  delay(1920);
-}
-void MoveRobotWestOneBlock() {
-  setRobotSpeed(50, 0, 0);
-  robotXposition ++;
-  delay(1920);
+
+int distance = 87500 / MOVINGSPEED;
+
+void MoveRobotOneBlock(int dir) {
+  switch (dir) {
+    case NORTH:
+      setRobotSpeed(0, MOVINGSPEED, LEFT_RIGHT_DIFF);
+      robotYposition ++;
+      break;
+    case SOUTH:
+      setRobotSpeed(0, -MOVINGSPEED, -LEFT_RIGHT_DIFF);
+      robotYposition --;
+      break;
+    case EAST:
+      setRobotSpeed(-MOVINGSPEED, 0, -FRONT_BACK_DIFF);
+      robotXposition --;
+      break;
+    case WEST:
+      setRobotSpeed(MOVINGSPEED, 0, FRONT_BACK_DIFF);
+      robotXposition ++;
+      break;
+  }
+  int i;
+  int time_step = distance / 7;
+  for(i=0; i<7  ; i++) {
+    if(getDistanceValue(dir) < 250) {
+      break;
+    }
+    
+    delay(time_step);
+  }
+  setRobotSpeed(0, 0, 0);
 }
 
 void setup() {
@@ -284,144 +272,188 @@ void setup() {
 int PID(int currentValue, int targetValue) {
   return currentValue - targetValue;
 }
-boolean robotIsaligned() {
-  int nCorrectValues = 0;
+boolean robotIsalignedY() {
+  boolean needsAlign = false;
   if (isWallOnRight() && abs(PID(getRightDistanceValue(), 173)) > 50) {
-    nCorrectValues--;
+    needsAlign = true;
+    //Serial.println("Needs align: Right");
   }
-  if (isWallOnLeft() && abs(PID(getLeftDistanceValue(), 173)) > 50) {
-    nCorrectValues--;
+  else if (isWallOnLeft() && abs(PID(getLeftDistanceValue(), 173)) > 50) {
+    needsAlign = true;
+    //Serial.println("Needs align: Left");
   }
+  return !needsAlign;
+}
+boolean robotIsalignedX() {
+  boolean needsAlign = false;
   if (isWallOnFront() && abs(PID(getFrontDistanceValue(), 173)) > 50) {
-    nCorrectValues--;
+    needsAlign = true;
+    //Serial.println("Needs align: Front");
   }
-  if (isWallOnBack() && abs(PID(getBackDistanceValue(), 173)) > 50) {
-    nCorrectValues--;
+  else if (isWallOnBack() && abs(PID(getBackDistanceValue(), 173)) > 50) {
+    needsAlign = true;
+    //Serial.println("Needs align: Back");
   }
-  Serial.println(nCorrectValues);
-  if (nCorrectValues > -1) {
-    Serial.println("true");
-    return true;
+  return !needsAlign;
+}
 
+boolean robotIsalignedR() {
+  boolean needsAlign = false;
+  if (isWallOnLeft() && abs(getRotationDistanceValue()) > 10) {
+    needsAlign = true;
+    //Serial.println("Needs align: Right");
   }
-  else {
-    Serial.println("false");
-    return false;
-  }
+
+  return !needsAlign;
 }
 
 
 
 
 void align() {
+  
   int x = 0;
   int y = 0;
   int r = 0;
   int startTime = millis();
   int targetDistanceFromWall = 143;
-  int threshold = 360;
-  while (!robotIsaligned()) {
+  int threshold = 430;
+  while (!robotIsalignedY()) {
     //** Y correction **//
     if (getRightDistanceValue() < threshold) {
       y = -PID(targetDistanceFromWall, getRightDistanceValue());
+      Serial.print("Aligning Right y = ");
+      Serial.println(y);
     }
     else if (getLeftDistanceValue() < threshold) {
       y =   PID(targetDistanceFromWall, getLeftDistanceValue());
+      Serial.print("Aligning Left y = ");
+      Serial.println(y);
     }
+    else {
+      break;
+    }
+    setRobotSpeed(0 , y, 0);
+  }
+  while (!robotIsalignedX()) {
+    //** X correction //
 
-    //** X correction **//
-
-    else if (getFrontDistanceValue() < threshold) {
+    if (getFrontDistanceValue() < threshold) {
       x = PID(targetDistanceFromWall, getFrontDistanceValue());
+      Serial.print("Aligning Front x = ");
+      Serial.println(x);
     }
     else if (getBackDistanceValue() < threshold) {
       x = -PID(targetDistanceFromWall, getBackDistanceValue());
+      Serial.print("Aligning Back x = ");
+      Serial.println(x);
+
     }
+    else {
+      break;
+    }
+    setRobotSpeed(x , 0, 0);
+  }
+  while (!robotIsalignedR()) {
 
-
-    else if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
-      r = PID(getRotationDistanceValue(), getLeftDistanceValue());
+    if (getRotationDistanceValue() < 360 && getLeftDistanceValue() < 360) {
+      r = getRotationDistanceValue();
+      Serial.print("Aligning Rotation r = ");
+      Serial.println(r);
+      setRobotSpeed(0 , 0, r);
+    }
+    else {
+      break;
     }
     //y = 0;
     //r = 0;
     //x = 0;
+    //Serial.println(r);
 
-    setRobotSpeed(x , y, -r);
   }
+  setRobotSpeed(0, 0, 0);
 }
 
 //*********************** LOOP METHOD ***************************//
 
 void turnLeft() {
   switch (robotDirection) {
-    case north:
-      robotDirection = east;
+    case NORTH:
+      robotDirection = EAST;
       break;
-    case east:
-      robotDirection = south;
+    case EAST:
+      robotDirection = SOUTH;
       break;
-    case south:
-      robotDirection = west;
+    case SOUTH:
+      robotDirection = WEST;
       break;
-    case west:
-      robotDirection = north;
+    case WEST:
+      robotDirection = NORTH;
       break;
   }
 }
 
 void turnRight() {
   switch (robotDirection) {
-    case north:
-      robotDirection = west;
+    case NORTH:
+      robotDirection = WEST;
       break;
-    case east:
-      robotDirection = north;
+    case EAST:
+      robotDirection = NORTH;
       break;
-    case south:
-      robotDirection = east;
+    case SOUTH:
+      robotDirection = EAST;
       break;
-    case west:
-      robotDirection = south;
+    case WEST:
+      robotDirection = SOUTH;
       break;
   }
 }
 
-void loop() {
-
-
-  turnLeft();
-  while(isWallOn(robotDirection)) {
-    turnRight();
-  }
-  lastChangeInDirection = millis();
-  setRobotSpeed(0, 0, 0);
-  align();
-  int robotMovoingSpeed = 40;
-  hasBeenHere[robotXposition][robotYposition] = true;
-
-
-  switch (robotDirection) {
-    case north:
+void print_direction(int dir) {
+  switch (dir) {
+    case NORTH:
       Serial.println("north");
-      MoveRobotNorthOneBlock();
       break;
-    case south:
+    case SOUTH:
       Serial.println("south");
-      MoveRobotSouthOneBlock();
       break;
-    case east:
+    case EAST:
       Serial.println("east");
-      MoveRobotEastOneBlock();
       break;
-    case west:
+    case WEST:
       Serial.println("west");
-      MoveRobotWestOneBlock();
       break;
     default :
       Serial.println("ERROR");
       break;
-
   }
-  //align();
+}
+void loop() {
+
+   align();
+   setRobotSpeed(0, 0, 0);
+   turnLeft();
+   while (isWallOn(robotDirection)) {
+     turnRight();
+   }
+
+   hasBeenHere[robotXposition][robotYposition] = true;
+
+   print_direction(robotDirection);
+   MoveRobotOneBlock(robotDirection);
+
+
+
+   //testPingSensors();
+  /*for (int i = 0; i < 3; i++) {
+    MoveRobotOneBlock(EAST);
+  }
+  for (int i = 0; i < 3; i++) {
+    MoveRobotOneBlock(WEST);
+  }*/
 
 }
+
+
+
